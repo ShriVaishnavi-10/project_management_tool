@@ -4,7 +4,7 @@ import { useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import Link from 'next/link';
 import { toast } from 'sonner';
-import { LayoutGrid, Lock, Mail, ArrowRight, CheckCircle2, ShieldCheck, Sparkles } from 'lucide-react';
+import { LayoutGrid, Lock, Mail, ArrowRight } from 'lucide-react';
 
 function LoginForm() {
   const router = useRouter();
@@ -43,12 +43,6 @@ function LoginForm() {
     }
   };
 
-  const fillDemo = (demoEmail: string) => {
-    setEmail(demoEmail);
-    setPassword('password123');
-    toast.info(`Filled credentials for ${demoEmail}`);
-  };
-
   return (
     <div className="skeuo-card p-8 rounded-3xl">
       <form className="space-y-5" onSubmit={handleLogin}>
@@ -65,7 +59,7 @@ function LoginForm() {
               required
               value={email}
               onChange={(e) => setEmail(e.target.value)}
-              placeholder="admin@example.com"
+              placeholder="name@company.com"
               className="skeuo-input block w-full pl-11 pr-4 py-3 rounded-xl text-sm placeholder-slate-400"
             />
           </div>
@@ -93,7 +87,7 @@ function LoginForm() {
         <button
           type="submit"
           disabled={loading}
-          className="skeuo-button-primary w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl text-sm font-bold disabled:opacity-50 cursor-pointer"
+          className="skeuo-button-primary w-full flex justify-center items-center gap-2 py-3.5 px-4 rounded-xl text-sm font-bold disabled:opacity-50 cursor-pointer shadow-sm"
         >
           {loading ? (
             <div className="w-5 h-5 border-2 border-white border-t-transparent rounded-full animate-spin" />
@@ -106,42 +100,7 @@ function LoginForm() {
         </button>
       </form>
 
-      {/* Quick Fill Test Credentials Box */}
-      <div className="mt-6 pt-6 border-t border-slate-200">
-        <div className="flex items-center gap-1.5 mb-3 text-xs font-bold uppercase tracking-wider text-blue-600">
-          <Sparkles className="w-3.5 h-3.5 text-blue-600" />
-          <span>Interviewer Test Credentials</span>
-        </div>
-        <div className="grid grid-cols-2 gap-2.5">
-          <button
-            type="button"
-            onClick={() => fillDemo('admin@example.com')}
-            className="skeuo-button-secondary flex items-center justify-between p-3 rounded-xl text-left text-xs"
-          >
-            <div>
-              <div className="font-bold text-slate-800">Admin Account</div>
-              <div className="text-[10px] text-slate-500 font-medium">admin@example.com</div>
-            </div>
-            <ShieldCheck className="w-4 h-4 text-emerald-600 shrink-0" />
-          </button>
-          <button
-            type="button"
-            onClick={() => fillDemo('jane@example.com')}
-            className="skeuo-button-secondary flex items-center justify-between p-3 rounded-xl text-left text-xs"
-          >
-            <div>
-              <div className="font-bold text-slate-800">Member Account</div>
-              <div className="text-[10px] text-slate-500 font-medium">jane@example.com</div>
-            </div>
-            <CheckCircle2 className="w-4 h-4 text-blue-600 shrink-0" />
-          </button>
-        </div>
-        <p className="mt-2.5 text-center text-[11px] text-slate-500 font-medium">
-          Default password: <span className="font-mono text-blue-700 font-bold bg-blue-50 px-1.5 py-0.5 rounded border border-blue-200">password123</span>
-        </p>
-      </div>
-
-      <div className="mt-6 text-center">
+      <div className="mt-6 text-center pt-6 border-t border-slate-200">
         <p className="text-xs font-medium text-slate-600">
           Don&apos;t have an account?{' '}
           <Link href="/register" className="font-bold text-blue-600 hover:text-blue-700 underline underline-offset-4">

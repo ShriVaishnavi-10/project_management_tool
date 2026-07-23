@@ -8,6 +8,9 @@ const inter = Inter({ subsets: ['latin'] });
 export const metadata: Metadata = {
   title: 'TaskPulse | Project Management Application',
   description: 'A modern, full-stack Project Management Tool inspired by Jira, Asana, and ClickUp powered by Next.js & Supabase.',
+  icons: {
+    icon: '/icon.svg',
+  },
 };
 
 export default function RootLayout({

@@ -1,0 +1,34 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" width="64" height="64">
+  <defs>
+    <!-- Background Gradient -->
+    <linearGradient id="bgGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#3b82f6" />
+      <stop offset="100%" stop-color="#1d4ed8" />
+    </linearGradient>
+
+    <!-- Top Bevel Highlight -->
+    <linearGradient id="topBevel" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.4" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0.0" />
+    </linearGradient>
+
+    <!-- Subtle Drop Shadow -->
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="120%">
+      <feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#0f172a" flood-opacity="0.25" />
+    </filter>
+  </defs>
+
+  <!-- Base Badge with Rounded Corners -->
+  <rect x="4" y="4" width="56" height="56" rx="16" fill="url(#bgGrad)" filter="url(#shadow)" />
+
+  <!-- Inset Bevel Light Border -->
+  <rect x="4.5" y="4.5" width="55" height="55" rx="15.5" fill="none" stroke="url(#topBevel)" stroke-width="1.5" />
+
+  <!-- LayoutGrid Icon Representation (4 Squares) -->
+  <g fill="none" stroke="#ffffff" stroke-width="4" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="18" y="18" width="11" height="11" rx="2.5" fill="#ffffff" fill-opacity="0.25" />
+    <rect x="35" y="18" width="11" height="11" rx="2.5" fill="#ffffff" fill-opacity="0.25" />
+    <rect x="18" y="35" width="11" height="11" rx="2.5" fill="#ffffff" fill-opacity="0.25" />
+    <rect x="35" y="35" width="11" height="11" rx="2.5" fill="#ffffff" fill-opacity="0.25" />
+  </g>
+</svg>
