@@ -20,6 +20,7 @@ import {
 } from 'lucide-react';
 import { Project, Task, User } from '@/lib/initial-data';
 import { Sidebar } from '@/components/sidebar';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function ProjectsPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -50,9 +51,11 @@ export default function ProjectsPage() {
   const [deletingProject, setDeletingProject] = useState<Project | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
       const [uRes, pRes, tRes, mRes] = await Promise.all([
         fetch('/api/auth/me'),
         fetch('/api/projects'),
@@ -67,6 +70,8 @@ export default function ProjectsPage() {
     } catch (err) {
       console.error(err);
       toast.error('Failed to load projects portfolio');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -244,7 +249,9 @@ export default function ProjectsPage() {
 
           {/* Projects Portfolio Grid */}
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {filteredProjects.length === 0 ? (
+            {loading ? (
+              <LoadingSpinner label="Loading projects portfolio..." />
+            ) : filteredProjects.length === 0 ? (
               <div className="col-span-full skeuo-panel p-12 text-center rounded-3xl text-slate-500 text-xs font-medium">
                 No projects found. Click "+ Create Project" to start a new initiative.
               </div>

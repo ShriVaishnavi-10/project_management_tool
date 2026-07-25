@@ -24,6 +24,7 @@ import {
 import { Project, Task, User } from '@/lib/initial-data';
 import { Sidebar } from '@/components/sidebar';
 import { TaskComments } from '@/components/task-comments';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function TasksPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -63,10 +64,12 @@ export default function TasksPage() {
   const [deletingTask, setDeletingTask] = useState<Task | null>(null);
 
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch Data
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
       const [uRes, pRes, tRes, mRes] = await Promise.all([
         fetch('/api/auth/me'),
         fetch('/api/projects'),
@@ -80,9 +83,10 @@ export default function TasksPage() {
       }
       if (pRes.ok) {
         const pData = await pRes.json();
-        setProjects(pData.projects || []);
-        if (pData.projects?.length > 0 && !newTaskProjectId) {
-          setNewTaskProjectId(pData.projects[0].id);
+        const projs = pData.projects || [];
+        setProjects(projs);
+        if (projs.length > 0) {
+          setNewTaskProjectId((prev) => prev || projs[0].id);
         }
       }
       if (tRes.ok) {
@@ -91,16 +95,19 @@ export default function TasksPage() {
       }
       if (mRes.ok) {
         const mData = await mRes.json();
-        setTeamMembers(mData.users || []);
-        if (mData.users?.length > 0 && !newTaskAssigneeId) {
-          setNewTaskAssigneeId(mData.users[0].id);
+        const users = mData.users || [];
+        setTeamMembers(users);
+        if (users.length > 0) {
+          setNewTaskAssigneeId((prev) => prev || users[0].id);
         }
       }
     } catch (err) {
       console.error(err);
-      toast.error('Failed to load tasks workspace');
+      toast.error('Failed to load workspace tasks');
+    } finally {
+      setLoading(false);
     }
-  }, [newTaskProjectId, newTaskAssigneeId]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -439,7 +446,7 @@ export default function TasksPage() {
           </div>
 
           {/* Tasks List */}
-          <div className="skeuo-card p-6 sm:p-8 rounded-3xl space-y-4">
+          <div className="skeuo-card p-6 sm:p-8 rounded-3xl space-y-4 min-h-[320px]">
             <div className="flex items-center justify-between border-b border-slate-200 pb-4">
               <h2 className="text-base font-bold text-slate-900 flex items-center gap-2">
                 <CheckCircle2 className="w-5 h-5 text-blue-600" />
@@ -448,15 +455,20 @@ export default function TasksPage() {
             </div>
 
             <div className="space-y-3">
-              {filteredTasks.length === 0 ? (
-                <div className="skeuo-panel p-12 text-center rounded-2xl text-slate-500 text-xs font-medium">
+              {loading ? (
+                <div className="py-4 flex items-center justify-center">
+                  <LoadingSpinner label="Loading workspace tasks..." />
+                </div>
+              ) : filteredTasks.length === 0 ? (
+                <div className="skeuo-panel p-12 text-center rounded-2xl text-slate-500 text-xs font-medium animate-fade-in">
                   No tasks match your criteria. Click "+ Create Task" to add a task.
                 </div>
               ) : (
-                filteredTasks.map((task) => {
-                  const assignee = teamMembers.find((m) => m.id === task.assigneeId);
-                  const project = projects.find((p) => p.id === task.projectId);
-                  const canModify = canModifyTask(task);
+                <div className="space-y-3 animate-fade-in">
+                  {filteredTasks.map((task) => {
+                    const assignee = teamMembers.find((m) => m.id === task.assigneeId);
+                    const project = projects.find((p) => p.id === task.projectId);
+                    const canModify = canModifyTask(task);
 
                   return (
                     <div
@@ -603,7 +615,8 @@ export default function TasksPage() {
                       </div>
                     </div>
                   );
-                })
+                })}
+              </div>
               )}
             </div>
           </div>
@@ -612,8 +625,8 @@ export default function TasksPage() {
 
       {/* Modal 1: Create Task */}
       {showTaskModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="skeuo-card max-w-lg w-full p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="skeuo-card max-w-xl w-full p-6 sm:p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto my-auto">
             <button
               onClick={() => setShowTaskModal(false)}
               className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 cursor-pointer"
@@ -744,8 +757,8 @@ export default function TasksPage() {
 
       {/* Modal 2: Edit Task */}
       {editingTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="skeuo-card max-w-lg w-full p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="skeuo-card max-w-xl w-full p-6 sm:p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto my-auto">
             <button
               onClick={() => setEditingTask(null)}
               className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 cursor-pointer"

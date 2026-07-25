@@ -23,6 +23,7 @@ import {
 } from 'lucide-react';
 import { Project, Task, User } from '@/lib/initial-data';
 import { TaskComments } from '@/components/task-comments';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function KanbanPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -56,10 +57,12 @@ export default function KanbanPage() {
   const [newTaskProjectId, setNewTaskProjectId] = useState('');
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch Data
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
       const [uRes, pRes, tRes, mRes] = await Promise.all([
         fetch('/api/auth/me'),
         fetch('/api/projects'),
@@ -70,24 +73,28 @@ export default function KanbanPage() {
       if (uRes.ok) setCurrentUser((await uRes.json()).user);
       if (pRes.ok) {
         const pData = await pRes.json();
-        setProjects(pData.projects || []);
-        if (pData.projects?.length > 0 && !newTaskProjectId) {
-          setNewTaskProjectId(pData.projects[0].id);
+        const projs = pData.projects || [];
+        setProjects(projs);
+        if (projs.length > 0) {
+          setNewTaskProjectId((prev) => prev || projs[0].id);
         }
       }
       if (tRes.ok) setTasks((await tRes.json()).tasks || []);
       if (mRes.ok) {
         const mData = await mRes.json();
-        setTeamMembers(mData.users || []);
-        if (mData.users?.length > 0 && !newTaskAssigneeId) {
-          setNewTaskAssigneeId(mData.users[0].id);
+        const users = mData.users || [];
+        setTeamMembers(users);
+        if (users.length > 0) {
+          setNewTaskAssigneeId((prev) => prev || users[0].id);
         }
       }
     } catch (err) {
       console.error(err);
       toast.error('Failed to load Kanban board');
+    } finally {
+      setLoading(false);
     }
-  }, [newTaskProjectId, newTaskAssigneeId]);
+  }, []);
 
   useEffect(() => {
     loadData();
@@ -352,7 +359,9 @@ export default function KanbanPage() {
 
                 {/* Column Task Cards */}
                 <div className="space-y-3 flex-1 overflow-y-auto pr-1">
-                  {col.tasks.length === 0 ? (
+                  {loading ? (
+                    <LoadingSpinner label="Loading stage..." />
+                  ) : col.tasks.length === 0 ? (
                     <div className="h-40 flex items-center justify-center border-2 border-dashed border-slate-200 rounded-2xl p-6 text-center text-xs text-slate-400 font-medium">
                       Drag tasks here to update stage to {col.title}
                     </div>
@@ -462,8 +471,8 @@ export default function KanbanPage() {
 
       {/* Modal 1: View Task Details Modal */}
       {viewingTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="skeuo-card max-w-xl w-full p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="skeuo-card max-w-xl w-full p-6 sm:p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto my-auto">
             <button
               onClick={() => setViewingTask(null)}
               className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 cursor-pointer"
@@ -584,8 +593,8 @@ export default function KanbanPage() {
 
       {/* Modal 2: Create Task Modal */}
       {showTaskModal && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="skeuo-card max-w-lg w-full p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="skeuo-card max-w-xl w-full p-6 sm:p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto my-auto">
             <button
               onClick={() => setShowTaskModal(false)}
               className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 cursor-pointer"

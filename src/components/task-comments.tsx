@@ -37,8 +37,8 @@ export function TaskComments({ taskId, currentUser, teamMembers }: TaskCommentsP
     fetchComments();
   }, [fetchComments]);
 
-  const handleAddComment = async (e: React.FormEvent) => {
-    e.preventDefault();
+  const handleAddComment = async (e?: React.SyntheticEvent) => {
+    if (e) e.preventDefault();
     if (!newComment.trim() || !currentUser) return;
 
     setSubmitting(true);
@@ -151,25 +151,32 @@ export function TaskComments({ taskId, currentUser, teamMembers }: TaskCommentsP
         )}
       </div>
 
-      {/* Add Comment Input Form */}
+      {/* Add Comment Input Container */}
       {currentUser && (
-        <form onSubmit={handleAddComment} className="flex items-center gap-2 pt-2 border-t border-slate-200">
+        <div className="flex items-center gap-2 pt-2 border-t border-slate-200">
           <input
             type="text"
             value={newComment}
             onChange={(e) => setNewComment(e.target.value)}
+            onKeyDown={(e) => {
+              if (e.key === 'Enter') {
+                e.preventDefault();
+                handleAddComment();
+              }
+            }}
             placeholder="Write a comment..."
             className="skeuo-input block flex-1 px-3.5 py-2 rounded-xl text-xs font-medium placeholder-slate-400"
           />
           <button
-            type="submit"
+            type="button"
+            onClick={() => handleAddComment()}
             disabled={submitting || !newComment.trim()}
             className="skeuo-button-primary px-4 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer disabled:opacity-50"
           >
             <Send className="w-3.5 h-3.5" />
             <span>Post</span>
           </button>
-        </form>
+        </div>
       )}
     </div>
   );

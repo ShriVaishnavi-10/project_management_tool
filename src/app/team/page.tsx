@@ -18,15 +18,18 @@ import {
 } from 'lucide-react';
 import { Task, User } from '@/lib/initial-data';
 import { Sidebar } from '@/components/sidebar';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function TeamPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [teamMembers, setTeamMembers] = useState<User[]>([]);
   const [tasks, setTasks] = useState<Task[]>([]);
   const [searchQuery, setSearchQuery] = useState('');
+  const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
+      setLoading(true);
       const [uRes, mRes, tRes] = await Promise.all([
         fetch('/api/auth/me'),
         fetch('/api/users'),
@@ -48,6 +51,8 @@ export default function TeamPage() {
     } catch (err) {
       console.error(err);
       toast.error('Failed to load team workspace');
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -120,89 +125,97 @@ export default function TeamPage() {
 
         {/* Member Roster Grid */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-          {filteredMembers.map((member) => {
-            const memberTasks = tasks.filter((t) => t.assigneeId === member.id);
-            const completedTasks = memberTasks.filter((t) => t.status === 'done').length;
-            const inProgressTasks = memberTasks.filter((t) => t.status === 'in_progress').length;
-            const pct = memberTasks.length > 0 ? Math.round((completedTasks / memberTasks.length) * 100) : 0;
+          {loading ? (
+            <LoadingSpinner label="Loading team roster..." />
+          ) : filteredMembers.length === 0 ? (
+            <div className="col-span-full skeuo-panel p-12 text-center rounded-3xl text-slate-500 text-xs font-medium">
+              No team members match your search criteria.
+            </div>
+          ) : (
+            filteredMembers.map((member) => {
+              const memberTasks = tasks.filter((t) => t.assigneeId === member.id);
+              const completedTasks = memberTasks.filter((t) => t.status === 'done').length;
+              const inProgressTasks = memberTasks.filter((t) => t.status === 'in_progress').length;
+              const pct = memberTasks.length > 0 ? Math.round((completedTasks / memberTasks.length) * 100) : 0;
 
-            return (
-              <div key={member.id} className="skeuo-card p-6 rounded-3xl space-y-5 hover:border-slate-400 transition-all">
-                <div className="flex items-center justify-between gap-3 shrink-0">
-                  <div className="flex items-center gap-3.5 min-w-0">
-                    <div className="w-12 h-12 rounded-2xl skeuo-badge overflow-hidden flex items-center justify-center font-bold text-base text-blue-700 shrink-0 border border-slate-300">
-                      {member.avatar ? (
-                        // eslint-disable-next-next/no-img-element
-                        <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                      ) : (
-                        member.name.charAt(0)
-                      )}
-                    </div>
-                    <div className="min-w-0">
-                      <h3 className="font-bold text-slate-900 text-sm truncate">{member.name}</h3>
-                      <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
-                        <Mail className="w-3 h-3 text-slate-400 shrink-0" />
-                        <span className="truncate max-w-[140px]">{member.email}</span>
+              return (
+                <div key={member.id} className="skeuo-card p-6 rounded-3xl space-y-5 hover:border-slate-400 transition-all">
+                  <div className="flex items-center justify-between gap-3 shrink-0">
+                    <div className="flex items-center gap-3.5 min-w-0">
+                      <div className="w-12 h-12 rounded-2xl skeuo-badge overflow-hidden flex items-center justify-center font-bold text-base text-blue-700 shrink-0 border border-slate-300">
+                        {member.avatar ? (
+                          // eslint-disable-next-next/no-img-element
+                          <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          member.name.charAt(0)
+                        )}
+                      </div>
+                      <div className="min-w-0">
+                        <h3 className="font-bold text-slate-900 text-sm truncate">{member.name}</h3>
+                        <div className="flex items-center gap-1 text-[11px] text-slate-500 font-medium">
+                          <Mail className="w-3 h-3 text-slate-400 shrink-0" />
+                          <span className="truncate max-w-[140px]">{member.email}</span>
+                        </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Perfectly Aligned Role Indicator / Admin Control Dropdown */}
-                  {currentUser?.role === 'admin' ? (
-                    <div className="relative inline-flex items-center shrink-0">
-                      <select
-                        value={member.role}
-                        onChange={(e) =>
-                          handleRoleChange(member.id, e.target.value as 'admin' | 'member')
-                        }
-                        className="skeuo-input h-7 pl-2.5 pr-6 py-0 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer border border-purple-300 bg-purple-50 text-purple-900 appearance-none shadow-sm hover:bg-purple-100/70 transition-colors focus:ring-1 focus:ring-purple-400"
+                    {/* Perfectly Aligned Role Indicator / Admin Control Dropdown */}
+                    {currentUser?.role === 'admin' ? (
+                      <div className="relative inline-flex items-center shrink-0">
+                        <select
+                          value={member.role}
+                          onChange={(e) =>
+                            handleRoleChange(member.id, e.target.value as 'admin' | 'member')
+                          }
+                          className="skeuo-input h-7 pl-2.5 pr-6 py-0 rounded-lg text-[10px] font-bold uppercase tracking-wider cursor-pointer border border-purple-300 bg-purple-50 text-purple-900 appearance-none shadow-sm hover:bg-purple-100/70 transition-colors focus:ring-1 focus:ring-purple-400"
+                        >
+                          <option value="member">Member</option>
+                          <option value="admin">Admin</option>
+                        </select>
+                        <ChevronDown className="w-3 h-3 text-purple-600 absolute right-1.5 pointer-events-none" />
+                      </div>
+                    ) : (
+                      <span
+                        className={`h-7 px-2.5 flex items-center rounded-lg text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
+                          member.role === 'admin'
+                            ? 'bg-purple-100 text-purple-800 border-purple-200'
+                            : 'bg-blue-100 text-blue-800 border-blue-200'
+                        }`}
                       >
-                        <option value="member">Member</option>
-                        <option value="admin">Admin</option>
-                      </select>
-                      <ChevronDown className="w-3 h-3 text-purple-600 absolute right-1.5 pointer-events-none" />
+                        {member.role}
+                      </span>
+                    )}
+                  </div>
+
+                  {/* Member Workload Stats */}
+                  <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
+                    <div className="skeuo-panel p-3 rounded-xl space-y-0.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Assigned</div>
+                      <div className="text-base font-black text-slate-900">{memberTasks.length} tasks</div>
                     </div>
-                  ) : (
-                    <span
-                      className={`h-7 px-2.5 flex items-center rounded-lg text-[10px] font-bold uppercase tracking-wider border shrink-0 ${
-                        member.role === 'admin'
-                          ? 'bg-purple-100 text-purple-800 border-purple-200'
-                          : 'bg-blue-100 text-blue-800 border-blue-200'
-                      }`}
-                    >
-                      {member.role}
-                    </span>
-                  )}
-                </div>
+                    <div className="skeuo-panel p-3 rounded-xl space-y-0.5">
+                      <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Completed</div>
+                      <div className="text-base font-black text-emerald-700">{completedTasks} tasks</div>
+                    </div>
+                  </div>
 
-                {/* Member Workload Stats */}
-                <div className="grid grid-cols-2 gap-2 pt-2 border-t border-slate-200">
-                  <div className="skeuo-panel p-3 rounded-xl space-y-0.5">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Assigned</div>
-                    <div className="text-base font-black text-slate-900">{memberTasks.length} tasks</div>
-                  </div>
-                  <div className="skeuo-panel p-3 rounded-xl space-y-0.5">
-                    <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Completed</div>
-                    <div className="text-base font-black text-emerald-700">{completedTasks} tasks</div>
-                  </div>
-                </div>
-
-                {/* Progress Bar */}
-                <div className="space-y-1.5">
-                  <div className="flex items-center justify-between text-xs font-bold">
-                    <span className="text-slate-500">Sprint Delivery</span>
-                    <span className="text-blue-700">{pct}%</span>
-                  </div>
-                  <div className="w-full h-2 rounded-full skeuo-panel overflow-hidden p-0.5">
-                    <div
-                      className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-300"
-                      style={{ width: `${pct}%` }}
-                    />
+                  {/* Progress Bar */}
+                  <div className="space-y-1.5">
+                    <div className="flex items-center justify-between text-xs font-bold">
+                      <span className="text-slate-500">Sprint Delivery</span>
+                      <span className="text-blue-700">{pct}%</span>
+                    </div>
+                    <div className="w-full h-2 rounded-full skeuo-panel overflow-hidden p-0.5">
+                      <div
+                        className="h-full rounded-full bg-gradient-to-r from-blue-500 to-emerald-500 transition-all duration-300"
+                        style={{ width: `${pct}%` }}
+                      />
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
-          })}
+              );
+            })
+          )}
         </div>
 
       </main>

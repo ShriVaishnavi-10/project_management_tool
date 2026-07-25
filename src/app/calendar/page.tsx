@@ -22,7 +22,7 @@ export default function CalendarPage() {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [projects, setProjects] = useState<Project[]>([]);
   const [teamMembers, setTeamMembers] = useState<User[]>([]);
-  const [currentMonth, setCurrentMonth] = useState(new Date(2026, 1, 1)); // Feb 2026
+  const [currentMonth, setCurrentMonth] = useState(new Date());
 
   // View Task Details Modal State
   const [viewingTask, setViewingTask] = useState<Task | null>(null);
@@ -60,6 +60,10 @@ export default function CalendarPage() {
     setCurrentMonth(new Date(currentMonth.getFullYear(), currentMonth.getMonth() + 1, 1));
   };
 
+  const jumpToToday = () => {
+    setCurrentMonth(new Date());
+  };
+
   const daysArray = Array.from({ length: daysInMonth }, (_, i) => i + 1);
   const paddingArray = Array.from({ length: firstDayOfWeek }, (_, i) => i);
 
@@ -85,8 +89,15 @@ export default function CalendarPage() {
 
             <div className="flex items-center gap-3">
               <button
+                onClick={jumpToToday}
+                className="skeuo-button-secondary px-3 py-2 rounded-xl text-xs font-bold text-blue-600 cursor-pointer hover:text-blue-700"
+              >
+                Today
+              </button>
+
+              <button
                 onClick={prevMonth}
-                className="skeuo-button-secondary p-2.5 rounded-xl cursor-pointer"
+                className="skeuo-button-secondary p-2 rounded-xl cursor-pointer"
               >
                 <ChevronLeft className="w-4 h-4" />
               </button>
@@ -95,7 +106,7 @@ export default function CalendarPage() {
               </span>
               <button
                 onClick={nextMonth}
-                className="skeuo-button-secondary p-2.5 rounded-xl cursor-pointer"
+                className="skeuo-button-secondary p-2 rounded-xl cursor-pointer"
               >
                 <ChevronRight className="w-4 h-4" />
               </button>
@@ -133,25 +144,38 @@ export default function CalendarPage() {
                   );
                 });
 
-                const isToday = day === 20 && currentMonth.getMonth() === 1;
+                const now = new Date();
+                const isToday =
+                  day === now.getDate() &&
+                  currentMonth.getMonth() === now.getMonth() &&
+                  currentMonth.getFullYear() === now.getFullYear();
 
                 return (
                   <div
                     key={`day-${day}`}
                     className={`h-32 rounded-2xl p-3 flex flex-col justify-between transition-all ${
                       isToday
-                        ? 'skeuo-card ring-2 ring-blue-600 border-blue-500'
+                        ? 'skeuo-card ring-2 ring-blue-600 dark:ring-blue-500 border-blue-500 bg-blue-50/60 dark:bg-blue-950/30 shadow-md'
                         : 'skeuo-panel hover:border-slate-400'
                     }`}
                   >
                     <div className="flex items-center justify-between">
-                      <span
-                        className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${
-                          isToday ? 'bg-blue-600 text-white shadow-sm' : 'text-slate-700'
-                        }`}
-                      >
-                        {day}
-                      </span>
+                      <div className="flex items-center gap-1.5">
+                        <span
+                          className={`text-xs font-black w-6 h-6 rounded-full flex items-center justify-center ${
+                            isToday
+                              ? 'bg-blue-600 text-white shadow-md ring-2 ring-blue-300 dark:ring-blue-800'
+                              : 'text-slate-700 dark:text-slate-300'
+                          }`}
+                        >
+                          {day}
+                        </span>
+                        {isToday && (
+                          <span className="px-1.5 py-0.5 rounded text-[9px] font-extrabold uppercase tracking-wider bg-blue-600 text-white shadow-sm">
+                            Today
+                          </span>
+                        )}
+                      </div>
                       {dayTasks.length > 0 && (
                         <span className="skeuo-badge px-2 py-0.5 rounded text-[10px] font-bold text-blue-700">
                           {dayTasks.length} task{dayTasks.length > 1 ? 's' : ''}
@@ -160,12 +184,12 @@ export default function CalendarPage() {
                     </div>
 
                     {/* Task Items Pills */}
-                    <div className="space-y-1 overflow-y-auto max-h-20 text-[10px]">
+                    <div className="space-y-1 overflow-y-auto overflow-x-hidden max-h-20 text-[10px]">
                       {dayTasks.map((t) => (
                         <div
                           key={t.id}
                           onClick={() => setViewingTask(t)}
-                          className={`p-1.5 rounded-lg border font-bold truncate cursor-pointer hover:scale-[1.02] active:scale-[0.98] transition-all shadow-sm ${
+                          className={`p-1.5 rounded-lg border font-bold truncate cursor-pointer hover:brightness-95 dark:hover:brightness-110 transition-all shadow-sm ${
                             t.status === 'done'
                               ? 'bg-emerald-100 text-emerald-800 border-emerald-200 line-through'
                               : t.priority === 'high'
@@ -188,8 +212,8 @@ export default function CalendarPage() {
 
       {/* Task Details Popup Modal */}
       {viewingTask && (
-        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
-          <div className="skeuo-card max-w-xl w-full p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto">
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 sm:p-6 bg-slate-900/40 backdrop-blur-sm overflow-y-auto">
+          <div className="skeuo-card max-w-xl w-full p-6 sm:p-8 rounded-3xl relative animate-in fade-in zoom-in duration-150 space-y-6 max-h-[90vh] overflow-y-auto my-auto">
             <button
               onClick={() => setViewingTask(null)}
               className="absolute top-6 right-6 p-2 rounded-xl text-slate-400 hover:text-slate-700 cursor-pointer"

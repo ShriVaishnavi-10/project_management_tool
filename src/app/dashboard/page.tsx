@@ -25,10 +25,12 @@ import {
   Calendar,
   User as UserIcon,
   Lock,
-  ArrowRight
+  ArrowRight,
+  Loader2
 } from 'lucide-react';
 import { Project, Task, ActivityLog, User } from '@/lib/initial-data';
 import { Sidebar } from '@/components/sidebar';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -61,10 +63,12 @@ export default function DashboardPage() {
   const [newTaskProjectId, setNewTaskProjectId] = useState('');
   const [newTaskAssigneeId, setNewTaskAssigneeId] = useState('');
   const [submitting, setSubmitting] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   // Fetch initial dashboard data
   const loadDashboardData = useCallback(async () => {
     try {
+      setLoading(true);
       const [userRes, projRes, taskRes, actRes, membersRes] = await Promise.all([
         fetch('/api/auth/me'),
         fetch('/api/projects'),
@@ -80,9 +84,10 @@ export default function DashboardPage() {
 
       if (projRes.ok) {
         const pData = await projRes.json();
-        setProjects(pData.projects || []);
-        if (pData.projects?.length > 0 && !newTaskProjectId) {
-          setNewTaskProjectId(pData.projects[0].id);
+        const projs = pData.projects || [];
+        setProjects(projs);
+        if (projs.length > 0) {
+          setNewTaskProjectId((prev) => prev || projs[0].id);
         }
       }
 
@@ -98,16 +103,19 @@ export default function DashboardPage() {
 
       if (membersRes.ok) {
         const mData = await membersRes.json();
-        setTeamMembers(mData.users || []);
-        if (mData.users?.length > 0 && !newTaskAssigneeId) {
-          setNewTaskAssigneeId(mData.users[0].id);
+        const users = mData.users || [];
+        setTeamMembers(users);
+        if (users.length > 0) {
+          setNewTaskAssigneeId((prev) => prev || users[0].id);
         }
       }
     } catch (err: unknown) {
       console.error(err);
       toast.error('Failed to load dashboard data');
+    } finally {
+      setLoading(false);
     }
-  }, [newTaskProjectId, newTaskAssigneeId]);
+  }, []);
 
   useEffect(() => {
     loadDashboardData();
@@ -326,7 +334,9 @@ export default function DashboardPage() {
           {/* Sprint Rate Radial Widget */}
           <div className="skeuo-panel p-4 px-6 rounded-2xl flex items-center gap-4 shrink-0">
             <div>
-              <div className="text-2xl font-black text-blue-600">{completionRate}%</div>
+              <div className="text-2xl font-black text-blue-600 flex items-center h-8">
+                {loading ? <Loader2 className="w-5 h-5 animate-spin text-blue-600" /> : `${completionRate}%`}
+              </div>
               <div className="text-[10px] font-bold uppercase tracking-wider text-slate-500">Sprint Completion</div>
             </div>
             <div className="w-12 h-12 rounded-full skeuo-card flex items-center justify-center p-1">
@@ -340,7 +350,7 @@ export default function DashboardPage() {
                 />
                 <path
                   className="text-blue-600"
-                  strokeDasharray={`${completionRate}, 100`}
+                  strokeDasharray={`${loading ? 0 : completionRate}, 100`}
                   strokeWidth="4"
                   strokeLinecap="round"
                   stroke="currentColor"
@@ -362,10 +372,12 @@ export default function DashboardPage() {
                 <Briefcase className="w-4 h-4 text-blue-600" />
               </div>
             </div>
-            <div className="text-3xl font-black text-slate-900">{projects.length}</div>
+            <div className="text-3xl font-black text-slate-900 flex items-center h-9">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" /> : projects.length}
+            </div>
             <div className="text-xs font-semibold text-emerald-600 flex items-center gap-1">
               <CheckCircle2 className="w-3.5 h-3.5" />
-              <span>{projects.filter(p => p.status === 'active').length} Active Initiatives</span>
+              <span>{loading ? 'Loading initiatives...' : `${projects.filter(p => p.status === 'active').length} Active Initiatives`}</span>
             </div>
           </div>
 
@@ -377,10 +389,12 @@ export default function DashboardPage() {
                 <Kanban className="w-4 h-4 text-blue-600" />
               </div>
             </div>
-            <div className="text-3xl font-black text-slate-900">{totalTasks}</div>
+            <div className="text-3xl font-black text-slate-900 flex items-center h-9">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin text-blue-600" /> : totalTasks}
+            </div>
             <div className="text-xs font-semibold text-blue-600 flex items-center gap-1">
               <Clock className="w-3.5 h-3.5" />
-              <span>{inProgressTasks} Currently In Progress</span>
+              <span>{loading ? 'Loading sprint...' : `${inProgressTasks} Currently In Progress`}</span>
             </div>
           </div>
 
@@ -392,9 +406,11 @@ export default function DashboardPage() {
                 <Clock className="w-4 h-4 text-amber-600" />
               </div>
             </div>
-            <div className="text-3xl font-black text-amber-700">{totalTasks - completedTasks}</div>
+            <div className="text-3xl font-black text-amber-700 flex items-center h-9">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin text-amber-600" /> : totalTasks - completedTasks}
+            </div>
             <div className="text-xs font-semibold text-amber-600">
-              In Progress & Backlog
+              {loading ? 'Loading backlog...' : 'In Progress & Backlog'}
             </div>
           </div>
 
@@ -406,9 +422,11 @@ export default function DashboardPage() {
                 <CheckCircle2 className="w-4 h-4 text-emerald-600" />
               </div>
             </div>
-            <div className="text-3xl font-black text-emerald-700">{completedTasks}</div>
+            <div className="text-3xl font-black text-emerald-700 flex items-center h-9">
+              {loading ? <Loader2 className="w-6 h-6 animate-spin text-emerald-600" /> : completedTasks}
+            </div>
             <div className="text-xs font-semibold text-emerald-600">
-              {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}% Completion Rate
+              {loading ? 'Loading metrics...' : `${totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}% Completion Rate`}
             </div>
           </div>
         </div>
@@ -441,7 +459,9 @@ export default function DashboardPage() {
               </div>
 
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-                {projects.length === 0 ? (
+                {loading ? (
+                  <LoadingSpinner label="Loading workspace projects..." />
+                ) : projects.length === 0 ? (
                   <div className="col-span-2 skeuo-panel p-8 text-center rounded-2xl text-slate-500 text-xs font-medium">
                     No projects created yet. Click "+ Add Project" to create your first workspace initiative.
                   </div>
@@ -523,18 +543,20 @@ export default function DashboardPage() {
                   </p>
                 </div>
 
-                <a
+                <Link
                   href="/tasks"
                   className="skeuo-button-secondary px-3.5 py-1.5 rounded-xl text-xs font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
                 >
                   <span>View All Tasks</span>
                   <ArrowRight className="w-3.5 h-3.5" />
-                </a>
+                </Link>
               </div>
 
               {/* Recent Tasks List */}
               <div className="space-y-3">
-                {tasks.length === 0 ? (
+                {loading ? (
+                  <LoadingSpinner label="Loading recent tasks..." />
+                ) : tasks.length === 0 ? (
                   <div className="skeuo-panel p-6 text-center rounded-2xl text-slate-500 text-xs font-medium">
                     No tasks created yet. Click "+ Create Task" to add your first item.
                   </div>
@@ -609,25 +631,31 @@ export default function DashboardPage() {
                 <span>Team Members</span>
               </h2>
               <div className="space-y-3">
-                {teamMembers.map((member) => (
-                  <div key={member.id} className="skeuo-panel p-3.5 rounded-2xl flex items-center gap-3">
-                    <div className="w-9 h-9 rounded-full skeuo-badge overflow-hidden flex items-center justify-center font-bold text-xs text-blue-700 shrink-0">
-                      {member.avatar ? (
-                        // eslint-disable-next-next/no-img-element
-                        <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
-                      ) : (
-                        member.name.charAt(0)
-                      )}
+                {loading ? (
+                  <LoadingSpinner label="Loading team..." />
+                ) : teamMembers.length === 0 ? (
+                  <div className="text-xs text-slate-500 font-medium p-4 text-center">No team members found.</div>
+                ) : (
+                  teamMembers.map((member) => (
+                    <div key={member.id} className="skeuo-panel p-3.5 rounded-2xl flex items-center gap-3">
+                      <div className="w-9 h-9 rounded-full skeuo-badge overflow-hidden flex items-center justify-center font-bold text-xs text-blue-700 shrink-0">
+                        {member.avatar ? (
+                          // eslint-disable-next-next/no-img-element
+                          <img src={member.avatar} alt={member.name} className="w-full h-full object-cover" />
+                        ) : (
+                          member.name.charAt(0)
+                        )}
+                      </div>
+                      <div className="flex-1 min-w-0">
+                        <div className="text-xs font-bold text-slate-900 truncate">{member.name}</div>
+                        <div className="text-[10px] text-slate-500 truncate font-medium">{member.email}</div>
+                      </div>
+                      <span className="skeuo-badge px-2 py-0.5 rounded text-[10px] font-bold text-blue-700 uppercase tracking-wider shrink-0">
+                        {member.role}
+                      </span>
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="text-xs font-bold text-slate-900 truncate">{member.name}</div>
-                      <div className="text-[10px] text-slate-500 truncate font-medium">{member.email}</div>
-                    </div>
-                    <span className="skeuo-badge px-2 py-0.5 rounded text-[10px] font-bold text-blue-700 uppercase tracking-wider shrink-0">
-                      {member.role}
-                    </span>
-                  </div>
-                ))}
+                  ))
+                )}
               </div>
             </div>
 
@@ -638,7 +666,9 @@ export default function DashboardPage() {
                 <span>Recent Activity Feed</span>
               </h2>
               <div className="space-y-4 relative before:absolute before:left-3 before:top-2 before:bottom-2 before:w-0.5 before:bg-slate-200">
-                {activities.length === 0 ? (
+                {loading ? (
+                  <LoadingSpinner label="Loading activity..." />
+                ) : activities.length === 0 ? (
                   <div className="text-xs text-slate-500 font-medium pl-6">No activity logged.</div>
                 ) : (
                   activities.slice(0, 5).map((act) => (
