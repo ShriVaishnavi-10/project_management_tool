@@ -24,9 +24,11 @@ import {
   Eye,
   Calendar,
   User as UserIcon,
-  Lock
+  Lock,
+  ArrowRight
 } from 'lucide-react';
 import { Project, Task, ActivityLog, User } from '@/lib/initial-data';
+import { Sidebar } from '@/components/sidebar';
 
 export default function DashboardPage() {
   const router = useRouter();
@@ -255,78 +257,53 @@ export default function DashboardPage() {
   const completionRate = totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0;
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
-      
-      {/* Top Header Bar */}
-      <header className="sticky top-0 z-40 bg-slate-100/90 backdrop-blur-md border-b border-slate-300">
-        <div className="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between gap-6">
-          
-          {/* Logo & Brand */}
-          <Link href="/" className="flex items-center gap-3 shrink-0">
-            <div className="skeuo-badge p-2.5 rounded-xl">
-              <LayoutGrid className="w-6 h-6 text-blue-600" />
-            </div>
-            <span className="text-xl font-black tracking-tight text-slate-900">
-              TaskPulse
-            </span>
-          </Link>
+    <div className="min-h-screen bg-slate-100 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
+      {/* Persistent Left Sidebar Menu */}
+      <Sidebar
+        currentUser={currentUser}
+        onOpenTaskModal={() => setShowTaskModal(true)}
+        onOpenProjectModal={() => setShowProjectModal(true)}
+      />
 
-          {/* Centered Inset Search Input */}
-          <div className="flex-1 max-w-lg hidden md:block relative">
-            <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-              <Search className="h-4 w-4 text-slate-400" />
-            </div>
-            <input
-              type="text"
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search projects, tasks, assignees..."
-              className="skeuo-input block w-full pl-11 pr-4 py-2.5 rounded-xl text-xs font-medium placeholder-slate-400"
-            />
-          </div>
-
-          {/* Action Buttons & User Menu */}
-          <div className="flex items-center gap-3 shrink-0">
-            <button
-              onClick={() => setShowTaskModal(true)}
-              className="skeuo-button-primary px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New Task</span>
-            </button>
-
-            <button
-              onClick={() => setShowProjectModal(true)}
-              className="skeuo-button-secondary px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer hidden sm:flex"
-            >
-              <FolderPlus className="w-4 h-4 text-slate-700" />
-              <span>New Project</span>
-            </button>
-
-            {/* Profile Avatar & Logout */}
-            <div className="flex items-center gap-3 pl-3 border-l border-slate-300">
-              <div
-                title={currentUser?.name || 'User Profile'}
-                className="w-9 h-9 rounded-full skeuo-badge overflow-hidden flex items-center justify-center font-bold text-xs text-blue-700 border border-slate-300"
-              >
-                {currentUser?.avatar ? (
-                  // eslint-disable-next-next/no-img-element
-                  <img src={currentUser.avatar} alt={currentUser.name} className="w-full h-full object-cover" />
-                ) : (
-                  currentUser?.name ? currentUser.name.charAt(0) : 'U'
-                )}
+      {/* Main Content Area Offset by Sidebar Width */}
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        {/* Top Search & Actions Bar */}
+        <header className="sticky top-0 z-30 bg-slate-100/90 backdrop-blur-md border-b border-slate-300">
+          <div className="max-w-7xl mx-auto px-6 sm:px-8 h-20 flex items-center justify-between gap-6">
+            {/* Search Input */}
+            <div className="flex-1 max-w-lg relative">
+              <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                <Search className="h-4 w-4 text-slate-400" />
               </div>
+              <input
+                type="text"
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                placeholder="Search projects, tasks, assignees..."
+                className="skeuo-input block w-full pl-11 pr-4 py-2.5 rounded-xl text-xs font-medium placeholder-slate-400"
+              />
+            </div>
+
+            {/* Quick Action Buttons */}
+            <div className="flex items-center gap-3 shrink-0">
               <button
-                onClick={handleLogout}
-                title="Sign Out"
-                className="skeuo-button-secondary p-2 rounded-xl text-slate-600 hover:text-red-600 transition-colors cursor-pointer"
+                onClick={() => setShowTaskModal(true)}
+                className="skeuo-button-primary px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer shadow-sm"
               >
-                <LogOut className="w-4 h-4" />
+                <Plus className="w-4 h-4" />
+                <span>New Task</span>
+              </button>
+
+              <button
+                onClick={() => setShowProjectModal(true)}
+                className="skeuo-button-secondary px-4 py-2.5 rounded-xl text-xs font-bold flex items-center gap-2 cursor-pointer hidden sm:flex"
+              >
+                <FolderPlus className="w-4 h-4 text-slate-700" />
+                <span>New Project</span>
               </button>
             </div>
           </div>
-        </div>
-      </header>
+        </header>
 
       {/* Main Workspace Container */}
       <div className="max-w-7xl w-full mx-auto px-6 sm:px-8 py-10 flex-1 space-y-10">
@@ -392,7 +369,7 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Card 2: Sprint Tasks */}
+          {/* Card 2: Total Tasks */}
           <div className="skeuo-card p-6 rounded-2xl space-y-3">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Total Tasks</span>
@@ -407,7 +384,21 @@ export default function DashboardPage() {
             </div>
           </div>
 
-          {/* Card 3: Completed */}
+          {/* Card 3: Pending Tasks */}
+          <div className="skeuo-card p-6 rounded-2xl space-y-3">
+            <div className="flex items-center justify-between text-slate-500">
+              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Pending Tasks</span>
+              <div className="skeuo-badge p-2 rounded-xl">
+                <Clock className="w-4 h-4 text-amber-600" />
+              </div>
+            </div>
+            <div className="text-3xl font-black text-amber-700">{totalTasks - completedTasks}</div>
+            <div className="text-xs font-semibold text-amber-600">
+              In Progress & Backlog
+            </div>
+          </div>
+
+          {/* Card 4: Completed Tasks */}
           <div className="skeuo-card p-6 rounded-2xl space-y-3">
             <div className="flex items-center justify-between text-slate-500">
               <span className="text-xs font-bold uppercase tracking-wider text-slate-600">Completed Tasks</span>
@@ -416,22 +407,8 @@ export default function DashboardPage() {
               </div>
             </div>
             <div className="text-3xl font-black text-emerald-700">{completedTasks}</div>
-            <div className="text-xs font-semibold text-slate-500">
-              {totalTasks - completedTasks} items remaining
-            </div>
-          </div>
-
-          {/* Card 4: High Priority */}
-          <div className="skeuo-card p-6 rounded-2xl space-y-3">
-            <div className="flex items-center justify-between text-slate-500">
-              <span className="text-xs font-bold uppercase tracking-wider text-slate-600">High Priority</span>
-              <div className="skeuo-badge p-2 rounded-xl">
-                <AlertCircle className="w-4 h-4 text-amber-600" />
-              </div>
-            </div>
-            <div className="text-3xl font-black text-amber-700">{highPriorityTasks}</div>
-            <div className="text-xs font-semibold text-amber-600">
-              Action Required
+            <div className="text-xs font-semibold text-emerald-600">
+              {totalTasks > 0 ? Math.round((completedTasks / totalTasks) * 100) : 0}% Completion Rate
             </div>
           </div>
         </div>
@@ -533,202 +510,90 @@ export default function DashboardPage() {
               </div>
             </div>
 
-            {/* Sprint Tasks Section */}
-            <div className="skeuo-card p-8 rounded-3xl space-y-6">
-              <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 pb-6 border-b border-slate-200">
+            {/* Recent Tasks Feed */}
+            <div className="skeuo-card p-6 sm:p-8 rounded-3xl space-y-5">
+              <div className="flex items-center justify-between">
                 <div>
                   <h2 className="text-lg font-bold text-slate-900 flex items-center gap-2">
-                    <Kanban className="w-5 h-5 text-blue-600" />
-                    <span>Sprint Tasks</span>
-                    {selectedProjectId !== 'all' && (
-                      <button
-                        onClick={() => setSelectedProjectId('all')}
-                        className="skeuo-badge px-2.5 py-0.5 rounded-md text-xs font-bold text-blue-700 ml-2 hover:bg-blue-50"
-                      >
-                        Reset Filter
-                      </button>
-                    )}
+                    <Clock className="w-5 h-5 text-blue-600" />
+                    <span>Recent Tasks</span>
                   </h2>
                   <p className="text-xs text-slate-500 font-medium">
-                    Showing {filteredTasks.length} task{filteredTasks.length !== 1 ? 's' : ''}
+                    Latest scheduled workspace tasks across all active initiatives
                   </p>
                 </div>
 
-                {/* Clean Status Tabs */}
-                <div className="flex items-center gap-1.5 p-1 bg-slate-200/70 rounded-xl">
-                  {(['all', 'todo', 'in_progress', 'done'] as const).map((st) => (
-                    <button
-                      key={st}
-                      onClick={() => setStatusFilter(st)}
-                      className={`px-3 py-1.5 rounded-lg text-xs font-bold capitalize transition-all cursor-pointer ${
-                        statusFilter === st
-                          ? 'skeuo-button-secondary text-blue-700 shadow-sm'
-                          : 'text-slate-600 hover:text-slate-900'
-                      }`}
-                    >
-                      {st === 'in_progress' ? 'In Progress' : st}
-                    </button>
-                  ))}
-                </div>
+                <a
+                  href="/tasks"
+                  className="skeuo-button-secondary px-3.5 py-1.5 rounded-xl text-xs font-bold text-blue-700 hover:text-blue-800 flex items-center gap-1 cursor-pointer"
+                >
+                  <span>View All Tasks</span>
+                  <ArrowRight className="w-3.5 h-3.5" />
+                </a>
               </div>
 
-              {/* Task Items List */}
-              <div className="space-y-4">
-                {filteredTasks.length === 0 ? (
-                  <div className="p-8 text-center text-slate-500 text-xs font-medium skeuo-panel rounded-2xl space-y-3">
-                    <div>No tasks found for this selection.</div>
-                    {selectedProjectId !== 'all' && (
-                      <button
-                        onClick={() => handleAddTaskForProject(selectedProjectId)}
-                        className="skeuo-button-primary px-4 py-2 rounded-xl text-xs font-bold cursor-pointer"
-                      >
-                        + Add Task to this Project
-                      </button>
-                    )}
+              {/* Recent Tasks List */}
+              <div className="space-y-3">
+                {tasks.length === 0 ? (
+                  <div className="skeuo-panel p-6 text-center rounded-2xl text-slate-500 text-xs font-medium">
+                    No tasks created yet. Click "+ Create Task" to add your first item.
                   </div>
                 ) : (
-                  filteredTasks.map((task) => {
-                    const assignee = teamMembers.find((m) => m.id === task.assigneeId);
-                    const project = projects.find((p) => p.id === task.projectId);
-                    const canModify =
-                      !currentUser ||
-                      currentUser.role === 'admin' ||
-                      task.assigneeId === currentUser.id ||
-                      task.creatorId === currentUser.id;
+                  [...tasks]
+                    .sort((a, b) => new Date(b.createdAt || b.updatedAt).getTime() - new Date(a.createdAt || a.updatedAt).getTime())
+                    .slice(0, 5)
+                    .map((task) => {
+                      const assignee = teamMembers.find((m) => m.id === task.assigneeId);
+                      const project = projects.find((p) => p.id === task.projectId);
 
-                    return (
-                      <div
-                        key={task.id}
-                        className={`skeuo-panel p-5 rounded-2xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4 transition-all ${
-                          task.status === 'done'
-                            ? 'bg-emerald-50/40 border-emerald-200 shadow-sm'
-                            : !canModify
-                            ? 'opacity-80 bg-slate-100/80'
-                            : 'hover:border-slate-400'
-                        }`}
-                      >
-                        <div className="flex items-start gap-3.5 flex-1 min-w-0">
-                          {/* Toggle Checkbox */}
-                          <button
-                            disabled={!canModify}
-                            onClick={() =>
-                              canModify &&
-                              handleTaskStatusChange(
-                                task.id,
-                                task.status === 'done' ? 'todo' : 'done'
-                              )
-                            }
-                            title={canModify ? 'Toggle Status' : `Allocated to ${assignee?.name || 'another team member'}`}
-                            className={`mt-0.5 w-5 h-5 rounded-md flex items-center justify-center shrink-0 border transition-all ${
-                              !canModify
-                                ? 'cursor-not-allowed bg-slate-200 border-slate-300 text-slate-400'
-                                : task.status === 'done'
-                                ? 'bg-emerald-600 border-emerald-700 text-white shadow-sm cursor-pointer'
-                                : 'skeuo-button-secondary border-slate-400 cursor-pointer'
-                            }`}
-                          >
-                            {!canModify ? (
-                              <Lock className="w-3 h-3 text-slate-400" />
-                            ) : (
-                              task.status === 'done' && <Check className="w-3.5 h-3.5 stroke-[3]" />
-                            )}
-                          </button>
+                      return (
+                        <div
+                          key={task.id}
+                          className="skeuo-panel p-4 rounded-2xl flex items-center justify-between gap-4 transition-all hover:border-slate-400"
+                        >
+                          <div className="flex items-center gap-3 min-w-0">
+                            <span
+                              className={`w-2.5 h-2.5 rounded-full shrink-0 ${
+                                task.status === 'done'
+                                  ? 'bg-emerald-500'
+                                  : task.status === 'in_progress'
+                                  ? 'bg-blue-500'
+                                  : 'bg-amber-400'
+                              }`}
+                            />
 
-                          <div className="space-y-1 min-w-0">
-                            <div className="flex items-center gap-2 flex-wrap">
-                              <span
-                                className={`font-bold text-sm text-slate-900 ${
-                                  task.status === 'done' ? 'line-through text-slate-500' : ''
-                                }`}
-                              >
+                            <div className="min-w-0">
+                              <div className={`text-xs font-bold text-slate-900 truncate ${task.status === 'done' ? 'line-through text-slate-400' : ''}`}>
                                 {task.title}
-                              </span>
-                              {project && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-200 shrink-0">
-                                  {project.name}
-                                </span>
-                              )}
-                              {task.status === 'done' && assignee && (
-                                <span className="px-2.5 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-800 border border-emerald-300 shrink-0 flex items-center gap-1 shadow-sm">
-                                  <CheckCircle2 className="w-3 h-3 text-emerald-600" />
-                                  Completed by {assignee.name}
-                                </span>
-                              )}
-                              {!canModify && task.status !== 'done' && (
-                                <span className="px-2 py-0.5 rounded text-[10px] font-bold bg-slate-200 text-slate-600 border border-slate-300 shrink-0 flex items-center gap-1">
-                                  <Lock className="w-2.5 h-2.5" />
-                                  Allocated to {assignee?.name?.split(' ')[0] || 'Team'}
-                                </span>
-                              )}
+                              </div>
+                              <div className="flex items-center gap-2 text-[10px] text-slate-500 font-medium mt-0.5">
+                                {project && (
+                                  <span className="text-blue-700 font-bold">{project.name}</span>
+                                )}
+                                {assignee && <span>• Assigned to {assignee.name}</span>}
+                              </div>
                             </div>
-                            {task.description && (
-                              <p className="text-xs text-slate-500 font-medium line-clamp-1">
-                                {task.description}
-                              </p>
-                            )}
+                          </div>
+
+                          <div className="flex items-center gap-2 shrink-0">
+                            <span
+                              className={`px-2 py-0.5 rounded text-[10px] font-bold uppercase border ${
+                                task.priority === 'high'
+                                  ? 'bg-amber-100 text-amber-800 border-amber-300'
+                                  : task.priority === 'medium'
+                                  ? 'bg-blue-100 text-blue-800 border-blue-200'
+                                  : 'bg-slate-100 text-slate-700 border-slate-200'
+                              }`}
+                            >
+                              {task.priority}
+                            </span>
+                            <span className="px-2 py-0.5 rounded text-[10px] font-bold uppercase bg-slate-200 text-slate-700">
+                              {task.status.replace('_', ' ')}
+                            </span>
                           </div>
                         </div>
-
-                        {/* Status, Priority & Actions */}
-                        <div className="flex items-center gap-3 shrink-0 self-end sm:self-center">
-                          <span
-                            className={`px-2.5 py-0.5 rounded text-[10px] font-bold uppercase tracking-wider border ${
-                              task.priority === 'high'
-                                ? 'bg-amber-100 text-amber-800 border-amber-300'
-                                : task.priority === 'medium'
-                                ? 'bg-blue-100 text-blue-800 border-blue-200'
-                                : 'bg-slate-100 text-slate-700 border-slate-200'
-                            }`}
-                          >
-                            {task.priority}
-                          </span>
-
-                          <select
-                            disabled={!canModify}
-                            value={task.status}
-                            onChange={(e) =>
-                              canModify &&
-                              handleTaskStatusChange(
-                                task.id,
-                                e.target.value as 'todo' | 'in_progress' | 'done'
-                              )
-                            }
-                            className={`skeuo-input px-2.5 py-1 rounded-lg text-xs font-bold ${
-                              !canModify ? 'cursor-not-allowed opacity-60 bg-slate-200' : 'cursor-pointer'
-                            }`}
-                          >
-                            <option value="todo">To Do</option>
-                            <option value="in_progress">In Progress</option>
-                            <option value="done">Done</option>
-                          </select>
-
-                          {assignee && (
-                            <div
-                              title={`Assigned to ${assignee.name}`}
-                              className="w-7 h-7 rounded-full skeuo-badge overflow-hidden flex items-center justify-center font-bold text-[10px] text-blue-700 shrink-0"
-                            >
-                              {assignee.avatar ? (
-                                // eslint-disable-next-next/no-img-element
-                                <img src={assignee.avatar} alt={assignee.name} className="w-full h-full object-cover" />
-                              ) : (
-                                assignee.name.charAt(0)
-                              )}
-                            </div>
-                          )}
-
-                          {canModify && (
-                            <button
-                              onClick={() => handleDeleteTask(task.id)}
-                              title="Delete Task"
-                              className="p-1.5 rounded-lg text-slate-400 hover:text-red-600 transition-colors cursor-pointer"
-                            >
-                              <Trash2 className="w-4 h-4" />
-                            </button>
-                          )}
-                        </div>
-                      </div>
-                    );
-                  })
+                      );
+                    })
                 )}
               </div>
             </div>
@@ -790,8 +655,8 @@ export default function DashboardPage() {
             </div>
           </div>
         </div>
-
       </div>
+    </div>
 
       {/* Modal 1: Project Details Modal */}
       {viewingProject && (
@@ -938,21 +803,6 @@ export default function DashboardPage() {
                   placeholder="Briefly describe project objectives..."
                   className="skeuo-input block w-full px-4 py-2.5 rounded-xl text-xs font-medium resize-none"
                 />
-              </div>
-
-              <div>
-                <label className="block text-xs font-bold uppercase tracking-wider text-slate-600 mb-1.5">
-                  Status
-                </label>
-                <select
-                  value={newProjectStatus}
-                  onChange={(e) => setNewProjectStatus(e.target.value as 'active' | 'on_hold' | 'completed')}
-                  className="skeuo-input block w-full px-4 py-2.5 rounded-xl text-xs font-bold cursor-pointer"
-                >
-                  <option value="active">Active</option>
-                  <option value="on_hold">On Hold</option>
-                  <option value="completed">Completed</option>
-                </select>
               </div>
 
               <div className="flex items-center justify-end gap-3 pt-4">

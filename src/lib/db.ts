@@ -53,6 +53,14 @@ class MemoryStore {
     this.users.push(newUser);
     return newUser;
   }
+  updateUserRole(id: string, role: 'admin' | 'member') {
+    const user = this.users.find((u) => u.id === id);
+    if (user) {
+      user.role = role;
+      return user;
+    }
+    return null;
+  }
 
   getProjects() { return [...this.projects].sort((a, b) => new Date(b.createdAt).getTime() - new Date(a.createdAt).getTime()); }
   getProjectById(id: string) { return this.projects.find((p) => p.id === id); }
@@ -300,6 +308,35 @@ export const db = {
       }
     }
     return dbStore.createUser(user);
+  },
+
+  async updateUserRole(id: string, role: 'admin' | 'member'): Promise<User | null> {
+    if (isSupabaseConfigured()) {
+      try {
+        const supabase = getSupabaseClient();
+        const { data, error } = await supabase
+          .from('users')
+          .update({ role })
+          .eq('id', id)
+          .select()
+          .single();
+
+        if (data && !error) {
+          return {
+            id: data.id,
+            name: data.name,
+            email: data.email,
+            passwordHash: data.password_hash,
+            avatar: data.avatar || '',
+            role: data.role,
+            createdAt: data.created_at,
+          };
+        }
+      } catch (err) {
+        console.error('[Supabase Exception] updateUserRole:', err);
+      }
+    }
+    return dbStore.updateUserRole(id, role);
   },
 
   // PROJECTS

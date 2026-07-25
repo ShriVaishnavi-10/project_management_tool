@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { Navbar } from '@/components/navbar';
 import { Activity as ActivityIcon, Filter, Clock, User as UserIcon } from 'lucide-react';
 import { ActivityLog, User } from '@/lib/initial-data';
+import { Sidebar } from '@/components/sidebar';
 
 export default function ActivityPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
@@ -37,10 +38,11 @@ export default function ActivityPage() {
   });
 
   return (
-    <div className="min-h-screen flex flex-col bg-slate-100 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
-      <Navbar userName={currentUser?.name} userAvatar={currentUser?.avatar} />
+    <div className="min-h-screen bg-slate-100 text-slate-900 selection:bg-blue-200 selection:text-blue-900">
+      <Sidebar currentUser={currentUser} />
 
-      <div className="max-w-4xl w-full mx-auto px-6 sm:px-8 py-10 flex-1 space-y-8">
+      <div className="lg:pl-64 flex flex-col min-h-screen">
+        <div className="max-w-4xl w-full mx-auto px-6 sm:px-8 py-10 flex-1 space-y-8">
         {/* Header */}
         <div className="skeuo-card p-6 sm:p-8 rounded-3xl flex flex-col sm:flex-row items-start sm:items-center justify-between gap-6">
           <div className="space-y-1">
@@ -114,5 +116,6 @@ export default function ActivityPage() {
         </div>
       </div>
     </div>
+  </div>
   );
 }

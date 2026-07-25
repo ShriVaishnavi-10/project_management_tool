@@ -8,6 +8,8 @@ import {
   Briefcase,
   Activity,
   Calendar,
+  CheckCircle2,
+  Users,
   LogOut,
   Plus,
   Search
@@ -48,10 +50,12 @@ export function Navbar({
 
   const navLinks = [
     { href: '/dashboard', label: 'Dashboard', icon: LayoutGrid },
-    { href: '/kanban', label: 'Kanban Board', icon: Kanban },
+    { href: '/kanban', label: 'Kanban', icon: Kanban },
     { href: '/projects', label: 'Projects', icon: Briefcase },
+    { href: '/tasks', label: 'Tasks', icon: CheckCircle2 },
     { href: '/activity', label: 'Activity', icon: Activity },
     { href: '/calendar', label: 'Calendar', icon: Calendar },
+    { href: '/team', label: 'Team', icon: Users },
   ];
 
   return (
@@ -110,25 +114,7 @@ export function Navbar({
 
         {/* Actions & Profile */}
         <div className="flex items-center gap-3 shrink-0">
-          {onOpenTaskModal && (
-            <button
-              onClick={onOpenTaskModal}
-              className="skeuo-button-primary px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer shadow-sm"
-            >
-              <Plus className="w-4 h-4" />
-              <span>New Task</span>
-            </button>
-          )}
 
-          {onOpenProjectModal && (
-            <button
-              onClick={onOpenProjectModal}
-              className="skeuo-button-secondary px-3.5 py-2 rounded-xl text-xs font-bold flex items-center gap-1.5 cursor-pointer hidden sm:flex"
-            >
-              <Plus className="w-4 h-4 text-slate-700" />
-              <span>New Project</span>
-            </button>
-          )}
 
           {/* User Avatar & Logout */}
           <div className="flex items-center gap-3 pl-3 border-l border-slate-300">

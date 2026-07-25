@@ -71,14 +71,15 @@ export async function PATCH(request: NextRequest) {
     }
 
     // Role-Based Task Scoping Rule:
-    // Members can ONLY update tasks allocated to them (or created by them). Admins can update all.
+    // Members can update tasks allocated to them, created by them, or unassigned tasks. Admins can update all.
     const isOwner = user.role === 'admin';
     const isAssignee = existingTask.assigneeId === user.id;
     const isCreator = existingTask.creatorId === user.id;
+    const isUnassigned = !existingTask.assigneeId;
 
-    if (!isOwner && !isAssignee && !isCreator) {
+    if (!isOwner && !isAssignee && !isCreator && !isUnassigned) {
       return NextResponse.json(
-        { error: 'Forbidden: You can only update tasks allocated to you.' },
+        { error: 'Forbidden: You can only update tasks allocated to you or unassigned tasks.' },
         { status: 403 }
       );
     }

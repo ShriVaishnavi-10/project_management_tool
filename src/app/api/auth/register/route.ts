@@ -32,12 +32,16 @@ export async function POST(request: NextRequest) {
     const passwordHash = await hashPassword(password);
     const avatar = `https://api.dicebear.com/7.x/avataaars/svg?seed=${encodeURIComponent(name)}`;
 
+    // Security: All new public registrations are assigned 'member' role by default.
+    // Only existing Administrators can promote a member to 'admin' in the Team Directory.
+    const role = 'member';
+
     const user = await db.createUser({
       name,
       email,
       passwordHash,
       avatar,
-      role: 'member',
+      role,
     });
 
     await createSession(user.id);

@@ -126,6 +126,8 @@ export default function RegisterPage() {
               </div>
             </div>
 
+
+
             <button
               type="submit"
               disabled={loading}
