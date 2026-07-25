@@ -174,9 +174,12 @@ export default function ProjectsPage() {
   };
 
   const filteredProjects = projects.filter((p) => {
+    const query = searchQuery.toLowerCase().trim();
     const matchesSearch =
-      p.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      p.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !query ||
+      p.name.toLowerCase().includes(query) ||
+      p.description.toLowerCase().includes(query) ||
+      p.status.toLowerCase().replace('_', ' ').includes(query);
     const matchesStatus = statusFilter === 'all' || p.status === statusFilter;
     return matchesSearch && matchesStatus;
   });
@@ -242,9 +245,17 @@ export default function ProjectsPage() {
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search projects by name or description..."
-              className="skeuo-input block w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-medium placeholder-slate-400"
+              placeholder="Search projects by name, description, or status..."
+              className="skeuo-input block w-full pl-10 pr-10 py-2.5 rounded-xl text-xs font-medium placeholder-slate-400"
             />
+            {searchQuery && (
+              <button
+                onClick={() => setSearchQuery('')}
+                className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+              >
+                <X className="w-4 h-4" />
+              </button>
+            )}
           </div>
 
           {/* Projects Portfolio Grid */}

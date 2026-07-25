@@ -223,9 +223,19 @@ export default function KanbanPage() {
 
   // Filter Tasks
   const filteredTasks = tasks.filter((t) => {
+    const query = searchQuery.toLowerCase().trim();
+    const assignee = teamMembers.find((m) => m.id === t.assigneeId);
+    const project = projects.find((p) => p.id === t.projectId);
+
     const matchesSearch =
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !query ||
+      t.title.toLowerCase().includes(query) ||
+      t.description.toLowerCase().includes(query) ||
+      t.status.toLowerCase().replace('_', ' ').includes(query) ||
+      t.priority.toLowerCase().includes(query) ||
+      (assignee && assignee.name.toLowerCase().includes(query)) ||
+      (project && project.name.toLowerCase().includes(query));
+
     const matchesProject = selectedProjectId === 'all' || t.projectId === selectedProjectId;
     const matchesPriority = selectedPriority === 'all' || t.priority === selectedPriority;
     return matchesSearch && matchesProject && matchesPriority;
@@ -295,9 +305,17 @@ export default function KanbanPage() {
                 type="text"
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                placeholder="Search Kanban tasks..."
-                className="skeuo-input block w-full pl-10 pr-4 py-2 rounded-xl text-xs font-medium placeholder-slate-400"
+                placeholder="Search Kanban tasks, assignees, projects, priorities..."
+                className="skeuo-input block w-full pl-10 pr-10 py-2 rounded-xl text-xs font-medium placeholder-slate-400"
               />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+                >
+                  <X className="w-4 h-4" />
+                </button>
+              )}
             </div>
 
             {/* Filter Dropdowns */}
@@ -322,12 +340,29 @@ export default function KanbanPage() {
                 className="skeuo-input px-3 py-2 rounded-xl text-xs font-bold cursor-pointer"
               >
                 <option value="all">All Priorities</option>
-                <option value="high">High Priority</option>
-                <option value="medium">Medium Priority</option>
                 <option value="low">Low Priority</option>
+                <option value="medium">Medium Priority</option>
+                <option value="high">High Priority</option>
               </select>
             </div>
           </div>
+
+          {/* Search Result Banner */}
+          {searchQuery.trim() !== '' && (
+            <div className="skeuo-card p-4 rounded-2xl flex items-center justify-between gap-4 border-l-4 border-blue-600 bg-blue-50/50">
+              <div className="flex items-center gap-2 text-xs font-bold text-slate-800">
+                <Search className="w-4 h-4 text-blue-600" />
+                <span>Showing search results for &ldquo;{searchQuery}&rdquo; ({filteredTasks.length} matching tasks across sprint columns)</span>
+              </div>
+              <button
+                onClick={() => setSearchQuery('')}
+                className="skeuo-button-secondary px-3 py-1 rounded-lg text-xs font-bold text-slate-700 hover:text-slate-900 cursor-pointer flex items-center gap-1 shrink-0"
+              >
+                <X className="w-3.5 h-3.5 text-slate-500" />
+                <span>Clear Search</span>
+              </button>
+            </div>
+          )}
 
           {/* Kanban Columns Grid */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 items-start">

@@ -34,20 +34,7 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
   const pathname = usePathname();
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
-  const [user, setUser] = useState<User | null>(() => {
-    if (currentUser) return currentUser;
-    if (typeof window !== 'undefined') {
-      const cached = sessionStorage.getItem('taskpulse_user');
-      if (cached) {
-        try {
-          return JSON.parse(cached);
-        } catch {
-          // ignore
-        }
-      }
-    }
-    return null;
-  });
+  const [user, setUser] = useState<User | null>(currentUser || null);
 
   const [isDarkMode, setIsDarkMode] = useState(() => {
     if (typeof window !== 'undefined') {
@@ -139,11 +126,11 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
         <div className="flex items-center gap-2">
           <button
             onClick={toggleDarkMode}
-            title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
+            title="Toggle Theme"
             className="skeuo-button-secondary p-2 rounded-xl text-slate-700 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
-            suppressHydrationWarning
           >
-            {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
+            <Sun className="w-4 h-4 text-amber-400 hidden dark:block" />
+            <Moon className="w-4 h-4 text-slate-600 block dark:hidden" />
           </button>
 
           <button
@@ -262,18 +249,16 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
           <button
             onClick={toggleDarkMode}
             className="w-full skeuo-button-secondary p-2.5 rounded-xl flex items-center justify-between text-xs font-bold cursor-pointer hover:border-slate-400 transition-all"
-            suppressHydrationWarning
           >
             <div className="flex items-center gap-2">
-              {isDarkMode ? (
-                <Sun className="w-4 h-4 text-amber-400" />
-              ) : (
-                <Moon className="w-4 h-4 text-blue-600" />
-              )}
-              <span>{isDarkMode ? 'Light Theme' : 'Dark Theme'}</span>
+              <Sun className="w-4 h-4 text-amber-400 hidden dark:block" />
+              <Moon className="w-4 h-4 text-blue-600 block dark:hidden" />
+              <span className="hidden dark:inline">Light Theme</span>
+              <span className="inline dark:hidden">Dark Theme</span>
             </div>
             <span className="text-[10px] font-extrabold uppercase px-2 py-0.5 rounded-full bg-slate-200 dark:bg-slate-800 text-slate-700 dark:text-slate-300">
-              {isDarkMode ? 'Dark On' : 'Light On'}
+              <span className="hidden dark:inline">Dark On</span>
+              <span className="inline dark:hidden">Light On</span>
             </span>
           </button>
 

@@ -299,9 +299,19 @@ export default function TasksPage() {
 
   // Filter Tasks
   const filteredTasks = tasks.filter((t) => {
+    const query = searchQuery.toLowerCase().trim();
+    const assignee = teamMembers.find((m) => m.id === t.assigneeId);
+    const project = projects.find((p) => p.id === t.projectId);
+
     const matchesSearch =
-      t.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      t.description.toLowerCase().includes(searchQuery.toLowerCase());
+      !query ||
+      t.title.toLowerCase().includes(query) ||
+      t.description.toLowerCase().includes(query) ||
+      t.status.toLowerCase().replace('_', ' ').includes(query) ||
+      t.priority.toLowerCase().includes(query) ||
+      (assignee && assignee.name.toLowerCase().includes(query)) ||
+      (project && project.name.toLowerCase().includes(query));
+
     const matchesStatus = statusFilter === 'all' || t.status === statusFilter;
     const matchesPriority = priorityFilter === 'all' || t.priority === priorityFilter;
     const matchesProject = projectFilter === 'all' || t.projectId === projectFilter;
@@ -370,9 +380,17 @@ export default function TasksPage() {
                   type="text"
                   value={searchQuery}
                   onChange={(e) => setSearchQuery(e.target.value)}
-                  placeholder="Filter tasks by title or content..."
-                  className="skeuo-input block w-full pl-10 pr-4 py-2.5 rounded-xl text-xs font-medium placeholder-slate-400"
+                  placeholder="Filter tasks by title, assignee, project, priority..."
+                  className="skeuo-input block w-full pl-10 pr-10 py-2.5 rounded-xl text-xs font-medium placeholder-slate-400"
                 />
+                {searchQuery && (
+                  <button
+                    onClick={() => setSearchQuery('')}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-slate-400 hover:text-slate-700 cursor-pointer"
+                  >
+                    <X className="w-4 h-4" />
+                  </button>
+                )}
               </div>
 
               {/* Status Tabs */}
