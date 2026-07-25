@@ -5,12 +5,14 @@ import { Navbar } from '@/components/navbar';
 import { Activity as ActivityIcon, Filter, Clock, User as UserIcon } from 'lucide-react';
 import { ActivityLog, User } from '@/lib/initial-data';
 import { Sidebar } from '@/components/sidebar';
+import { LoadingSpinner } from '@/components/loading-spinner';
 
 export default function ActivityPage() {
   const [currentUser, setCurrentUser] = useState<User | null>(null);
   const [activities, setActivities] = useState<ActivityLog[]>([]);
   const [teamMembers, setTeamMembers] = useState<User[]>([]);
   const [actionFilter, setActionFilter] = useState<string>('all');
+  const [loading, setLoading] = useState(true);
 
   const loadData = useCallback(async () => {
     try {
@@ -25,6 +27,8 @@ export default function ActivityPage() {
       if (mRes.ok) setTeamMembers((await mRes.json()).users || []);
     } catch (err) {
       console.error(err);
+    } finally {
+      setLoading(false);
     }
   }, []);
 
@@ -74,7 +78,11 @@ export default function ActivityPage() {
         {/* Timeline */}
         <div className="skeuo-card p-8 rounded-3xl">
           <div className="space-y-6 relative before:absolute before:left-4 before:top-3 before:bottom-3 before:w-0.5 before:bg-slate-300">
-            {filteredActivities.length === 0 ? (
+            {loading ? (
+              <div className="py-8 flex items-center justify-center">
+                <LoadingSpinner label="Loading workspace audit events..." />
+              </div>
+            ) : filteredActivities.length === 0 ? (
               <div className="text-xs text-slate-500 font-medium pl-8 py-4">No activity events recorded.</div>
             ) : (
               filteredActivities.map((act) => {

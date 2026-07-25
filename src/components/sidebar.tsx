@@ -141,6 +141,7 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
             onClick={toggleDarkMode}
             title={isDarkMode ? 'Switch to Light Mode' : 'Switch to Dark Mode'}
             className="skeuo-button-secondary p-2 rounded-xl text-slate-700 cursor-pointer flex items-center gap-1.5 text-xs font-bold"
+            suppressHydrationWarning
           >
             {isDarkMode ? <Sun className="w-4 h-4 text-amber-400" /> : <Moon className="w-4 h-4 text-slate-600" />}
           </button>
@@ -261,6 +262,7 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
           <button
             onClick={toggleDarkMode}
             className="w-full skeuo-button-secondary p-2.5 rounded-xl flex items-center justify-between text-xs font-bold cursor-pointer hover:border-slate-400 transition-all"
+            suppressHydrationWarning
           >
             <div className="flex items-center gap-2">
               {isDarkMode ? (
