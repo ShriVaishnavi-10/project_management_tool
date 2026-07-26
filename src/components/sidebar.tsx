@@ -23,6 +23,7 @@ import {
   Moon
 } from 'lucide-react';
 import { User } from '@/lib/initial-data';
+import { useTheme } from '@/components/providers';
 
 interface SidebarProps {
   currentUser?: User | null;
@@ -35,32 +36,14 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
   const router = useRouter();
   const [mobileOpen, setMobileOpen] = useState(false);
   const [user, setUser] = useState<User | null>(currentUser || null);
-
-  const [isDarkMode, setIsDarkMode] = useState(() => {
-    if (typeof window !== 'undefined') {
-      return document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
-    }
-    return false;
-  });
+  const { theme, toggleTheme: contextToggleTheme } = useTheme();
 
   const toggleDarkMode = () => {
-    if (isDarkMode) {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('theme', 'light');
-      setIsDarkMode(false);
-      toast.success('Switched to Light Mode');
-    } else {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('theme', 'dark');
-      setIsDarkMode(true);
-      toast.success('Switched to Dark Mode');
-    }
+    contextToggleTheme();
+    toast.success(theme === 'dark' ? 'Switched to Light Mode' : 'Switched to Dark Mode');
   };
 
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark') || localStorage.getItem('theme') === 'dark';
-    setIsDarkMode(isDark);
-
     if (currentUser) {
       setUser(currentUser);
       sessionStorage.setItem('taskpulse_user', JSON.stringify(currentUser));
@@ -152,22 +135,22 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
 
       {/* Persistent Desktop Sidebar Drawer */}
       <aside
-        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-100 border-r border-slate-300 flex flex-col justify-between p-5 lg:translate-x-0 ${
+        className={`fixed top-0 bottom-0 left-0 z-50 w-64 bg-slate-100 dark:bg-slate-900 border-r border-slate-300 dark:border-slate-800 flex flex-col justify-between p-5 text-slate-900 dark:text-slate-100 lg:translate-x-0 ${
           mobileOpen ? 'translate-x-0 transition-transform duration-200' : '-translate-x-full lg:transition-none'
         }`}
       >
         <div className="space-y-6">
           {/* Brand Logo Header */}
-          <div className="flex items-center justify-between pb-4 border-b border-slate-200">
+          <div className="flex items-center justify-between pb-4 border-b border-slate-200 dark:border-slate-800">
             <Link href="/dashboard" className="flex items-center gap-3">
               <div className="skeuo-badge p-2.5 rounded-2xl">
                 <LayoutGrid className="w-6 h-6 text-blue-600" />
               </div>
               <div>
-                <span className="text-xl font-black tracking-tight text-slate-900">
+                <span className="text-xl font-black tracking-tight text-slate-900 dark:text-slate-100">
                   TaskPulse
                 </span>
-                <div className="text-[10px] font-bold uppercase tracking-wider text-slate-400">
+                <div className="text-[10px] font-extrabold uppercase tracking-wider text-slate-500 dark:text-slate-400">
                   Workspace Studio
                 </div>
               </div>
@@ -175,17 +158,15 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
 
             <button
               onClick={() => setMobileOpen(false)}
-              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700"
+              className="lg:hidden p-1.5 rounded-lg text-slate-400 hover:text-slate-700 dark:hover:text-slate-200"
             >
               <X className="w-5 h-5" />
             </button>
           </div>
 
-
-
           {/* Sidebar Menu Items List */}
           <div className="space-y-1">
-            <div className="px-3 pb-2 text-[10px] font-bold uppercase tracking-wider text-slate-400">
+            <div className="px-3 pb-2 text-[10px] font-extrabold uppercase tracking-wider text-slate-600 dark:text-slate-400">
               Workspace Menu
             </div>
 
@@ -201,7 +182,7 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
                   className={`group relative w-full px-3.5 py-2.5 rounded-xl text-xs flex items-center justify-between transition-all duration-200 ${
                     isActive
                       ? 'bg-blue-600 text-white font-black shadow-md border border-blue-700'
-                      : 'text-slate-700 dark:text-slate-300 font-bold hover:font-black hover:text-black dark:hover:text-white hover:bg-slate-300/70 dark:hover:bg-slate-800 border border-transparent hover:border-slate-400/40 dark:hover:border-slate-700'
+                      : 'text-slate-900 dark:text-slate-100 font-extrabold hover:text-blue-700 dark:hover:text-white hover:bg-slate-200/80 dark:hover:bg-slate-800 border border-transparent hover:border-slate-400/40 dark:hover:border-slate-700'
                   }`}
                 >
                   {/* Left Active/Hover Accent Bar */}
@@ -218,10 +199,10 @@ export function Sidebar({ currentUser, onOpenTaskModal, onOpenProjectModal }: Si
                       className={`w-4 h-4 transition-transform duration-200 group-hover:translate-x-0.5 ${
                         isActive
                           ? 'text-white'
-                          : 'text-slate-600 dark:text-slate-400 group-hover:text-black dark:group-hover:text-white'
+                          : 'text-slate-800 dark:text-slate-200 group-hover:text-blue-600 dark:group-hover:text-white'
                       }`}
                     />
-                    <span className="transition-colors duration-200">{item.label}</span>
+                    <span className="transition-colors duration-200 font-bold">{item.label}</span>
                   </div>
 
                   {item.badge ? (

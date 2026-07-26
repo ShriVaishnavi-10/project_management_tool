@@ -14,7 +14,14 @@ interface ThemeContextType {
 const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function Providers({ children }: { children: ReactNode }) {
-  const [theme, setThemeState] = useState<Theme>('light');
+  const [theme, setThemeState] = useState<Theme>(() => {
+    if (typeof window !== 'undefined') {
+      const saved = localStorage.getItem('theme') as Theme;
+      if (saved === 'dark' || saved === 'light') return saved;
+      if (document.documentElement.classList.contains('dark')) return 'dark';
+    }
+    return 'light';
+  });
 
   useEffect(() => {
     const saved = localStorage.getItem('theme') as Theme;
@@ -25,6 +32,8 @@ export function Providers({ children }: { children: ReactNode }) {
       } else {
         document.documentElement.classList.remove('dark');
       }
+    } else if (document.documentElement.classList.contains('dark')) {
+      setThemeState('dark');
     }
   }, []);
 
@@ -39,7 +48,8 @@ export function Providers({ children }: { children: ReactNode }) {
   };
 
   const toggleTheme = () => {
-    setTheme(theme === 'dark' ? 'light' : 'dark');
+    const nextTheme = theme === 'dark' ? 'light' : 'dark';
+    setTheme(nextTheme);
   };
 
   return (
