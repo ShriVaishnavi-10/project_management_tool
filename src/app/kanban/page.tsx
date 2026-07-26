@@ -60,9 +60,9 @@ export default function KanbanPage() {
   const [loading, setLoading] = useState(true);
 
   // Fetch Data
-  const loadData = useCallback(async () => {
+  const loadData = useCallback(async (showLoader = false) => {
     try {
-      setLoading(true);
+      if (showLoader) setLoading(true);
       const [uRes, pRes, tRes, mRes] = await Promise.all([
         fetch('/api/auth/me'),
         fetch('/api/projects'),
@@ -97,7 +97,7 @@ export default function KanbanPage() {
   }, []);
 
   useEffect(() => {
-    loadData();
+    loadData(true);
   }, [loadData]);
 
   // Create Task Handler
@@ -138,13 +138,18 @@ export default function KanbanPage() {
 
   // Move Task Handler (Used by Drag & Drop and Quick Shift buttons)
   const handleMoveTask = async (taskId: string, newStatus: 'todo' | 'in_progress' | 'done') => {
-    try {
-      // Optimistic Update
-      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
-      if (viewingTask && viewingTask.id === taskId) {
-        setViewingTask((prev) => (prev ? { ...prev, status: newStatus } : null));
-      }
+    const existingTask = tasks.find((t) => t.id === taskId);
+    if (!existingTask || existingTask.status === newStatus) return;
 
+    const previousStatus = existingTask.status;
+
+    // Optimistic Update immediately in local state
+    setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: newStatus } : t)));
+    if (viewingTask && viewingTask.id === taskId) {
+      setViewingTask((prev) => (prev ? { ...prev, status: newStatus } : null));
+    }
+
+    try {
       const res = await fetch('/api/tasks', {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
@@ -154,13 +159,21 @@ export default function KanbanPage() {
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || 'Failed to move task');
 
+      if (data.task) {
+        setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, ...data.task } : t)));
+      }
+
       const statusLabels = { todo: 'To Do', in_progress: 'In Progress', done: 'Done' };
       toast.success(`Task moved to ${statusLabels[newStatus]}`);
-      loadData();
     } catch (err: unknown) {
+      // Revert optimistic update back to previous status ONLY on failure
+      setTasks((prev) => prev.map((t) => (t.id === taskId ? { ...t, status: previousStatus } : t)));
+      if (viewingTask && viewingTask.id === taskId) {
+        setViewingTask((prev) => (prev ? { ...prev, status: previousStatus } : null));
+      }
+
       const msg = err instanceof Error ? err.message : 'Error moving task';
       toast.error(msg);
-      loadData(); // Revert on failure
     }
   };
 

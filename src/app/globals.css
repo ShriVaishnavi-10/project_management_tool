@@ -1,5 +1,7 @@
 @import "tailwindcss";
 
+@custom-variant dark (&:where(.dark, .dark *));
+
 @layer base {
   :root {
     --background: 210 40% 98%;
@@ -45,21 +47,21 @@ body {
   transition: background-color 0.3s ease, color 0.3s ease;
 }
 
-/* Firefox Engine Text Contrast & Weight Enhancements */
+/* Firefox Engine Text Contrast & Weight Enhancements (Scoped by Theme) */
 @-moz-document url-prefix() {
   body {
     font-weight: 500;
   }
-  .text-slate-400 {
+  :root:not(.dark) .text-slate-400 {
     color: #475569 !important;
   }
-  .text-slate-500 {
+  :root:not(.dark) .text-slate-500 {
     color: #334155 !important;
   }
-  .text-slate-600 {
+  :root:not(.dark) .text-slate-600 {
     color: #1e293b !important;
   }
-  .text-slate-700 {
+  :root:not(.dark) .text-slate-700 {
     color: #0f172a !important;
   }
   .dark .text-slate-400 {
